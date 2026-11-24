@@ -147,7 +147,6 @@ jobs:
   build-windows:
     runs-on: windows-latest
     needs: build
-    if: vars.BUILD_WINDOWS_APP == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
