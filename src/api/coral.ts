@@ -21,7 +21,7 @@ const ZNCA_USER_AGENT = `com.nintendo.znca/${ZNCA_VERSION}(${ZNCA_PLATFORM}/${ZN
 export const ZNCA_API_COMPATIBILITY_VERSION = 'd8fAZDPzwimzQ7c6';
 
 const ZNC_URL = 'https://api-dd1.znc.srv.nintendo.net';
-export const ZNCA_CLIENT_ID = '71b963c1b7b6d119';
+export const ZNCA_CLIENT_ID = 'dee8b1e726a6fd60';
 
 const FRIEND_CODE = /^\d{4}-\d{4}-\d{4}$/;
 const FRIEND_CODE_HASH = /^[A-Za-z0-9]{10}$/;
@@ -124,13 +124,13 @@ export abstract class AbstractCoralApi {
     }
 
     async getEvent(id: number) {
-        return this.call<Event, {id: number}>('/v1/Event/Show', {
+        return this.call<Event, { id: number }>('/v1/Event/Show', {
             id,
         });
     }
 
     async getUser(id: number) {
-        return this.call<User, {id: number}>('/v3/User/Show', {
+        return this.call<User, { id: number }>('/v3/User/Show', {
             id,
         });
     }
@@ -158,7 +158,7 @@ export abstract class AbstractCoralApi {
     }
 
     async getFriend(nsa_id: string) {
-        return this.call<Friend_4, {nsaId: string}>('/v4/Friend/Show', {
+        return this.call<Friend_4, { nsaId: string }>('/v4/Friend/Show', {
             nsaId: nsa_id,
         });
     }
@@ -166,26 +166,26 @@ export abstract class AbstractCoralApi {
     async updateFriendNote(nsa_id: string, note: string) {
         if (note.length > 20) throw new TypeError('Friend note cannot be longer than 20 characters');
 
-        return this.call<{}, {friendNsaId: string; note: string}>('/v4/Friend/Note/Update', {
+        return this.call<{}, { friendNsaId: string; note: string }>('/v4/Friend/Note/Update', {
             friendNsaId: nsa_id,
             note,
         });
     }
 
     async getPlayLog(nsa_id: string) {
-        return this.call<UserPlayLog, {nsaId: string}>('/v4/User/PlayLog/Show', {
+        return this.call<UserPlayLog, { nsaId: string }>('/v4/User/PlayLog/Show', {
             nsaId: nsa_id,
         });
     }
 
     async deleteFriendIsNew(nsa_id: string) {
-        return this.call<{}, {friendNsaId: string}>('/v4/Friend/IsNew/Delete', {
+        return this.call<{}, { friendNsaId: string }>('/v4/Friend/IsNew/Delete', {
             friendNsaId: nsa_id,
         });
     }
 
     async deleteFriend(nsa_id: string) {
-        return this.call<{}, {nsaId: string}>('/v3/Friend/Delete', {
+        return this.call<{}, { nsaId: string }>('/v3/Friend/Delete', {
             nsaId: nsa_id,
         });
     }
@@ -194,10 +194,10 @@ export abstract class AbstractCoralApi {
         if (!FRIEND_CODE.test(friend_code)) throw new Error('Invalid friend code');
         if (hash && !FRIEND_CODE_HASH.test(hash)) throw new Error('Invalid friend code hash');
 
-        return hash ? this.call<FriendCodeUser, {friendCode: string; friendCodeHash: string}>('/v3/Friend/GetUserByFriendCodeHash', {
+        return hash ? this.call<FriendCodeUser, { friendCode: string; friendCodeHash: string }>('/v3/Friend/GetUserByFriendCodeHash', {
             friendCode: friend_code,
             friendCodeHash: hash,
-        }) : this.call<FriendCodeUser, {friendCode: string}>('/v3/Friend/GetUserByFriendCode', {
+        }) : this.call<FriendCodeUser, { friendCode: string }>('/v3/Friend/GetUserByFriendCode', {
             friendCode: friend_code,
         });
     }
@@ -214,7 +214,7 @@ export abstract class AbstractCoralApi {
     }
 
     async getReceivedFriendRequest(friend_request_id: string) {
-        return this.call<ReceivedFriendRequest, {id: string}>('/v4/FriendRequest/Received/Show', {
+        return this.call<ReceivedFriendRequest, { id: string }>('/v4/FriendRequest/Received/Show', {
             id: friend_request_id,
         });
     }
@@ -416,7 +416,7 @@ class EncryptedRequestBody<T = unknown> {
         readonly request_encryption: RequestEncryptionProvider,
         readonly encrypted: Uint8Array,
         readonly data: T | null = null,
-    ) {}
+    ) { }
 }
 
 export default class CoralApi extends AbstractCoralApi implements CoralApiInterface {
@@ -447,7 +447,7 @@ export default class CoralApi extends AbstractCoralApi implements CoralApiInterf
     ) {
         super();
 
-        this[ClientInfoSymbol] = {platform: ZNCA_PLATFORM, version: znca_version, useragent: znca_useragent};
+        this[ClientInfoSymbol] = { platform: ZNCA_PLATFORM, version: znca_version, useragent: znca_useragent };
         this[CoralUserIdSymbol] = coral_user_id;
         this[NintendoAccountIdSymbol] = na_id;
         this[ZncaApiSymbol] = znca_api ?? null;
@@ -457,10 +457,10 @@ export default class CoralApi extends AbstractCoralApi implements CoralApiInterf
             this.request_encryption = znca_api;
         }
 
-        Object.defineProperty(this, RemoteConfigSymbol, {enumerable: false, value: config ?? null});
-        Object.defineProperty(this, 'token', {enumerable: false, value: this.token});
-        Object.defineProperty(this, '_renewToken', {enumerable: false, value: this._renewToken});
-        Object.defineProperty(this, '_token_expired', {enumerable: false, value: this._token_expired});
+        Object.defineProperty(this, RemoteConfigSymbol, { enumerable: false, value: config ?? null });
+        Object.defineProperty(this, 'token', { enumerable: false, value: this.token });
+        Object.defineProperty(this, '_renewToken', { enumerable: false, value: this._renewToken });
+        Object.defineProperty(this, '_token_expired', { enumerable: false, value: this._token_expired });
     }
 
     /** @internal */
@@ -519,7 +519,7 @@ export default class CoralApi extends AbstractCoralApi implements CoralApiInterf
     }
 
     async getCurrentUser() {
-        return this.call<CurrentUser<true>, {id: number}>('/v4/User/ShowSelf', {
+        return this.call<CurrentUser<true>, { id: number }>('/v4/User/ShowSelf', {
             id: this[CoralUserIdSymbol],
         });
     }
@@ -669,7 +669,7 @@ export default class CoralApi extends AbstractCoralApi implements CoralApiInterf
 
     static async createWithSessionToken(token: string, useragent = getAdditionalUserAgents()) {
         const data = await this.loginWithSessionToken(token, useragent);
-        return {nso: this.createWithSavedToken(data, useragent), data};
+        return { nso: this.createWithSavedToken(data, useragent), data };
     }
 
     static async createWithNintendoAccountToken(
@@ -677,7 +677,7 @@ export default class CoralApi extends AbstractCoralApi implements CoralApiInterf
         useragent = getAdditionalUserAgents()
     ) {
         const data = await this.loginWithNintendoAccountToken(token, user, useragent);
-        return {nso: this.createWithSavedToken(data, useragent), data};
+        return { nso: this.createWithSavedToken(data, useragent), data };
     }
 
     static createWithSavedToken(data: CoralAuthData, useragent = getAdditionalUserAgents()) {
@@ -823,7 +823,7 @@ class CoralApiRequest<T = unknown> {
         readonly body: string | Uint8Array | EncryptedRequestBody | undefined,
         readonly headers: HeadersInit | undefined,
         readonly flags: Partial<RequestFlags>,
-    ) {}
+    ) { }
 
     async fetch(_attempt = 0): Promise<Result<T>> {
         if (!this.flags[RequestFlagNoAutoRenewTokenSymbol]) {
@@ -936,7 +936,7 @@ class CoralApiRequest<T = unknown> {
         const decrypted = request_encryption instanceof ZncaApiNxapi ?
             await request_encryption.decryptResponse(data,
                 request_encryption.auth?.has_nsa_assertion_scope &&
-                    this.flags[RequestFlagNxapiZncaApiRequestNsaAssertionSymbol]) :
+                this.flags[RequestFlagNxapiZncaApiRequestNsaAssertionSymbol]) :
             await request_encryption.decryptResponse(data);
 
         const encryption: ResponseEncryption = {
@@ -999,14 +999,14 @@ class CoralApiRequest<T = unknown> {
 
         const result = data.result;
 
-        Object.defineProperty(result, ResponseSymbol, {enumerable: false, value: response});
-        Object.defineProperty(result, ResponseEncryptionSymbol, {enumerable: false, value: encryption});
-        Object.defineProperty(result, ResponseDataSymbol, {enumerable: false, value: data});
-        Object.defineProperty(result, CorrelationIdSymbol, {enumerable: false, value: data.correlationId});
+        Object.defineProperty(result, ResponseSymbol, { enumerable: false, value: response });
+        Object.defineProperty(result, ResponseEncryptionSymbol, { enumerable: false, value: encryption });
+        Object.defineProperty(result, ResponseDataSymbol, { enumerable: false, value: data });
+        Object.defineProperty(result, CorrelationIdSymbol, { enumerable: false, value: data.correlationId });
 
-        Object.defineProperty(result, 'status', {enumerable: false, value: CoralStatus.OK});
-        Object.defineProperty(result, 'result', {enumerable: false, value: data.result});
-        Object.defineProperty(result, 'correlationId', {enumerable: false, value: data.correlationId});
+        Object.defineProperty(result, 'status', { enumerable: false, value: CoralStatus.OK });
+        Object.defineProperty(result, 'result', { enumerable: false, value: data.result });
+        Object.defineProperty(result, 'correlationId', { enumerable: false, value: data.correlationId });
 
         return result as Result<T>;
     }
