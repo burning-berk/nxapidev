@@ -14,7 +14,7 @@ debugGraphQl.enabled = true;
 const debugUpgradeQuery = createDebug('nxapi:api:splatnet3:upgrade-query');
 
 export const SPLATNET3_WEBSERVICE_ID = 4834290508791808;
-export const SPLATNET3_WEBSERVICE_URL = 'https://api.lp1.av5ja.srv.nintendo.net';
+export const SPLATNET3_WEBSERVICE_URL = 'https://api.dd1.av5ja.srv.nintendo.net';
 export const SPLATNET3_WEBSERVICE_USERAGENT = 'Mozilla/5.0 (Linux; Android 8.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.125 Mobile Safari/537.36';
 
 export const languages = [
@@ -99,7 +99,7 @@ export default class SplatNet3Api {
         readonly na_country: string,
         public language: string,
         public useragent: string,
-    ) {}
+    ) { }
 
     async fetch<T = unknown>(
         url: string, method = 'GET', body?: string, headers?: object,
@@ -126,7 +126,7 @@ export default class SplatNet3Api {
             headers: Object.assign({
                 'User-Agent': this.useragent,
                 'Accept': '*/*',
-                'Referrer': 'https://api.lp1.av5ja.srv.nintendo.net/',
+                'Referrer': 'https://api.dd1.av5ja.srv.nintendo.net/',
                 'X-Requested-With': 'XMLHttpRequest',
                 'authorization': 'Bearer ' + this.bullet_token,
                 'content-type': 'application/json',
@@ -179,10 +179,10 @@ export default class SplatNet3Api {
         _Id extends string = string,
         /** @private */
         _Result extends (T extends object ? T : _Id extends KnownRequestId ? ResultTypes[_Id] : unknown) =
-            (T extends object ? T : _Id extends KnownRequestId ? ResultTypes[_Id] : unknown),
+        (T extends object ? T : _Id extends KnownRequestId ? ResultTypes[_Id] : unknown),
         /** @private */
         _Variables extends (V extends object ? V : _Id extends KnownRequestId ? VariablesTypes[_Id] : unknown) =
-            (V extends object ? V : _Id extends KnownRequestId ? VariablesTypes[_Id] : unknown),
+        (V extends object ? V : _Id extends KnownRequestId ? VariablesTypes[_Id] : unknown),
     >(id: _Id, variables: _Variables): Promise<PersistedQueryResult<_Result>> {
         id = this.getUpgradedPersistedQueryId(id) as _Id;
 
@@ -208,8 +208,8 @@ export default class SplatNet3Api {
             debugGraphQl('GraphQL error in query %s: %s', id, error.message, error);
         }
 
-        Object.defineProperty(data, RequestIdSymbol, {value: id});
-        Object.defineProperty(data, VariablesSymbol, {value: variables});
+        Object.defineProperty(data, RequestIdSymbol, { value: id });
+        Object.defineProperty(data, VariablesSymbol, { value: variables });
 
         return data as PersistedQueryResult<_Result>;
     }
@@ -587,17 +587,17 @@ export default class SplatNet3Api {
         const query =
             type === XRankingLeaderboardType.X_RANKING ?
                 rule === XRankingLeaderboardRule.SPLAT_ZONES ? RequestId.DetailTabViewXRankingArRefetchQuery :
-                rule === XRankingLeaderboardRule.TOWER_CONTROL ? RequestId.DetailTabViewXRankingLfRefetchQuery :
-                rule === XRankingLeaderboardRule.RAINMAKER ? RequestId.DetailTabViewXRankingGlRefetchQuery :
-                rule === XRankingLeaderboardRule.CLAM_BLITZ ? RequestId.DetailTabViewXRankingClRefetchQuery :
-                null :
-            type === XRankingLeaderboardType.WEAPON ?
-                rule === XRankingLeaderboardRule.SPLAT_ZONES ? RequestId.DetailTabViewWeaponTopsArRefetchQuery :
-                rule === XRankingLeaderboardRule.TOWER_CONTROL ? RequestId.DetailTabViewWeaponTopsLfRefetchQuery :
-                rule === XRankingLeaderboardRule.RAINMAKER ? RequestId.DetailTabViewWeaponTopsGlRefetchQuery :
-                rule === XRankingLeaderboardRule.CLAM_BLITZ ? RequestId.DetailTabViewWeaponTopsClRefetchQuery :
-                null :
-            null;
+                    rule === XRankingLeaderboardRule.TOWER_CONTROL ? RequestId.DetailTabViewXRankingLfRefetchQuery :
+                        rule === XRankingLeaderboardRule.RAINMAKER ? RequestId.DetailTabViewXRankingGlRefetchQuery :
+                            rule === XRankingLeaderboardRule.CLAM_BLITZ ? RequestId.DetailTabViewXRankingClRefetchQuery :
+                                null :
+                type === XRankingLeaderboardType.WEAPON ?
+                    rule === XRankingLeaderboardRule.SPLAT_ZONES ? RequestId.DetailTabViewWeaponTopsArRefetchQuery :
+                        rule === XRankingLeaderboardRule.TOWER_CONTROL ? RequestId.DetailTabViewWeaponTopsLfRefetchQuery :
+                            rule === XRankingLeaderboardRule.RAINMAKER ? RequestId.DetailTabViewWeaponTopsGlRefetchQuery :
+                                rule === XRankingLeaderboardRule.CLAM_BLITZ ? RequestId.DetailTabViewWeaponTopsClRefetchQuery :
+                                    null :
+                    null;
 
         if (!query) throw new TypeError('Invalid leaderboard');
 
@@ -960,7 +960,7 @@ export default class SplatNet3Api {
 
     static async createWithCoral(coral: CoralApiInterface, user: NintendoAccountUserCoral) {
         const data = await this.loginWithCoral(coral, user);
-        return {splatnet: this.createWithSavedToken(data), data};
+        return { splatnet: this.createWithSavedToken(data), data };
     }
 
     static createWithSavedToken(data: SplatNet3AuthData) {
@@ -1044,7 +1044,7 @@ export default class SplatNet3Api {
             headers: {
                 'User-Agent': SPLATNET3_WEBSERVICE_USERAGENT,
                 'Accept': '*/*',
-                'Referrer': 'https://api.lp1.av5ja.srv.nintendo.net/',
+                'Referrer': 'https://api.dd1.av5ja.srv.nintendo.net/',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Content-Type': 'application/json',
                 'X-Web-View-Ver': version,
@@ -1094,7 +1094,7 @@ function getMapPersistedQueriesModeFromEnvironment(): MapQueriesMode {
     return MapQueriesMode.ALL;
 }
 
-export class SplatNet3ErrorResponse<T = unknown> extends ErrorResponse<T> {}
+export class SplatNet3ErrorResponse<T = unknown> extends ErrorResponse<T> { }
 
 export class SplatNet3AuthErrorResponse extends SplatNet3ErrorResponse {
     constructor(
@@ -1107,13 +1107,13 @@ export class SplatNet3AuthErrorResponse extends SplatNet3ErrorResponse {
     }
 }
 
-type GraphQLResponseWithErrors = (GraphQLSuccessResponse & {errors: GraphQLError[]}) | GraphQLErrorResponse;
+type GraphQLResponseWithErrors = (GraphQLSuccessResponse & { errors: GraphQLError[] }) | GraphQLErrorResponse;
 
 export class SplatNet3GraphQLErrorResponse<
     Id extends string = string,
     /** @private */
     _Variables extends Id extends KnownRequestId ? VariablesTypes[Id] : unknown =
-        Id extends KnownRequestId ? VariablesTypes[Id] : unknown,
+    Id extends KnownRequestId ? VariablesTypes[Id] : unknown,
 > extends SplatNet3ErrorResponse<GraphQLResponseWithErrors> {
     constructor(
         message: string, response: Response | globalThis.Response,
@@ -1134,10 +1134,10 @@ export class SplatNet3GraphQLResourceNotFoundResponse<
     Id extends string = string,
     /** @private */
     _Result extends Id extends KnownRequestId ? ResultTypes[Id] : unknown =
-        Id extends KnownRequestId ? ResultTypes[Id] : unknown,
+    Id extends KnownRequestId ? ResultTypes[Id] : unknown,
     /** @private */
     _Variables extends Id extends KnownRequestId ? VariablesTypes[Id] : unknown =
-        Id extends KnownRequestId ? VariablesTypes[Id] : unknown,
+    Id extends KnownRequestId ? VariablesTypes[Id] : unknown,
 > extends SplatNet3ErrorResponse<PersistedQueryResult<_Result>> {
     constructor(
         message: string, response: Response | globalThis.Response,

@@ -9,7 +9,7 @@ import { timeoutSignal } from '../util/misc.js';
 const debug = createDebug('nxapi:api:nooklink');
 
 export const NOOKLINK_WEBSERVICE_ID = 4953919198265344;
-export const NOOKLINK_WEBSERVICE_URL = 'https://web.sd.lp1.acbaa.srv.nintendo.net';
+export const NOOKLINK_WEBSERVICE_URL = 'https://web.sd.dd1.acbaa.srv.nintendo.net';
 export const NOOKLINK_WEBSERVICE_USERAGENT = 'Mozilla/5.0 (Linux; Android 8.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.125 Mobile Safari/537.36';
 
 const NOOKLINK_URL = NOOKLINK_WEBSERVICE_URL + '/api';
@@ -25,7 +25,7 @@ export default class NooklinkApi {
         public gtoken: string,
         public useragent: string,
         readonly client_version = BLANCO_VERSION,
-    ) {}
+    ) { }
 
     async fetch<T extends object>(
         url: string, method = 'GET', body?: string | FormData, headers?: object,
@@ -56,7 +56,7 @@ export default class NooklinkApi {
                 'dnt': '1',
                 'Accept': 'application/json, text/plain, */*',
                 'Accept-Language': 'en-GB,en-US;q=0.8',
-                'Origin': 'https://web.sd.lp1.acbaa.srv.nintendo.net',
+                'Origin': 'https://web.sd.dd1.acbaa.srv.nintendo.net',
                 'Content-Type': 'application/json',
                 'X-Blanco-Version': this.client_version,
             }, headers),
@@ -125,7 +125,7 @@ export default class NooklinkApi {
 
     static async createWithCoral(coral: CoralApiInterface, user: NintendoAccountUserCoral) {
         const data = await this.loginWithCoral(coral, user);
-        return {nooklink: this.createWithSavedToken(data), data};
+        return { nooklink: this.createWithSavedToken(data), data };
     }
 
     static createWithSavedToken(data: NooklinkAuthData) {
@@ -220,7 +220,7 @@ export class NooklinkUserApi {
         public useragent: string,
         public language = 'en-GB',
         readonly client_version = BLANCO_VERSION,
-    ) {}
+    ) { }
 
     async fetch<T extends object>(
         url: string, method = 'GET', body?: string | FormData, headers?: object,
@@ -251,7 +251,7 @@ export class NooklinkUserApi {
                 'dnt': '1',
                 'Accept': 'application/json, text/plain,*/*',
                 'Accept-Language': 'en-GB,en-US;q=0.8',
-                'Origin': 'https://web.sd.lp1.acbaa.srv.nintendo.net',
+                'Origin': 'https://web.sd.dd1.acbaa.srv.nintendo.net',
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + this.auth_token,
                 'X-Blanco-Version': this.client_version,
@@ -373,7 +373,7 @@ export class NooklinkUserApi {
     /** @internal */
     static async _createWithNooklinkApi(client: NooklinkApi, user_id: string) {
         const data = await this._loginWithNooklinkApi(client, user_id);
-        return {nooklinkuser: this.createWithSavedToken(data), data};
+        return { nooklinkuser: this.createWithSavedToken(data), data };
     }
 
     static createWithSavedToken(data: NooklinkUserAuthData) {
@@ -391,7 +391,7 @@ export class NooklinkUserApi {
     }
 }
 
-export class NooklinkErrorResponse extends ErrorResponse<WebServiceError> {}
+export class NooklinkErrorResponse extends ErrorResponse<WebServiceError> { }
 
 export interface NooklinkAuthData {
     webserviceToken: WebServiceToken;

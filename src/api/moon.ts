@@ -7,7 +7,7 @@ import { timeoutSignal } from '../util/misc.js';
 
 const debug = createDebug('nxapi:api:moon');
 
-const MOON_URL = 'https://api-lp1.pctl.srv.nintendo.net/moon';
+const MOON_URL = 'https://api-dd1.pctl.srv.nintendo.net/moon';
 export const ZNMA_CLIENT_ID = '54789befb391a838';
 
 export const ZNMA_VERSION = '1.17.0';
@@ -27,7 +27,7 @@ export default class MoonApi {
         readonly znma_version = ZNMA_VERSION,
         readonly znma_build = ZNMA_BUILD,
         readonly znma_useragent = ZNMA_USER_AGENT,
-    ) {}
+    ) { }
 
     async fetch<T extends object>(
         url: string, method = 'GET', body?: string, headers?: object,
@@ -140,7 +140,7 @@ export default class MoonApi {
 
     static async createWithSessionToken(token: string) {
         const data = await this.loginWithSessionToken(token);
-        return {moon: this.createWithSavedToken(data), data};
+        return { moon: this.createWithSavedToken(data), data };
     }
 
     static createWithSavedToken(data: MoonAuthData) {
@@ -177,7 +177,7 @@ export default class MoonApi {
     }
 }
 
-export class MoonErrorResponse extends ErrorResponse<MoonError> {}
+export class MoonErrorResponse extends ErrorResponse<MoonError> { }
 
 const na_client_settings = {
     client_id: ZNMA_CLIENT_ID,
