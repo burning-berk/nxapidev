@@ -51,7 +51,7 @@ export async function getToken(
     // TODO: getNaToken already does this, but is called after checkUseLimit
     // It has it's own rate limit so just call this first
 
-    if (jwt.payload.iss !== 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
+    if (jwt.payload.iss !== 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
         throw new InvalidNintendoAccountTokenError('Invalid Nintendo Account session token issuer');
     }
     if (jwt.payload.typ !== 'session_token') {

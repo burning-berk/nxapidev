@@ -23,7 +23,7 @@ export class NintendoAccountSessionAuthorisation {
     ) {
         this.scope = typeof scope === 'string' ? scope : scope.join(' ');
 
-        Object.defineProperty(this, 'result', {enumerable: false});
+        Object.defineProperty(this, 'result', { enumerable: false });
     }
 
     async getSessionToken(code: string, state?: string): Promise<HasResponse<NintendoAccountSessionToken, Response>>
@@ -58,7 +58,7 @@ export class NintendoAccountSessionAuthorisation {
             throw new TypeError('Invalid code');
         }
 
-        Object.defineProperty(this, 'result', {value: {state: result_state, code}, writable: false});
+        Object.defineProperty(this, 'result', { value: { state: result_state, code }, writable: false });
 
         return getNintendoAccountSessionToken(code, this.verifier, this.client_id);
     }
@@ -115,7 +115,7 @@ export function generateAuthData(
         theme: 'login_form',
     };
 
-    const url = 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/authorize?' +
+    const url = 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/authorize?' +
         new URLSearchParams(params).toString();
 
     return {
@@ -130,7 +130,7 @@ export async function getNintendoAccountSessionToken(code: string, verifier: str
     debug('Getting Nintendo Account session token');
 
     const [signal, cancel] = timeoutSignal();
-    const response = await fetch('https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/api/session_token', {
+    const response = await fetch('https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/api/session_token', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -167,7 +167,7 @@ export async function getNintendoAccountToken(token: string, client_id: string) 
     debug('Getting Nintendo Account token');
 
     const [signal, cancel] = timeoutSignal();
-    const response = await fetch('https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/api/token', {
+    const response = await fetch('https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com/connect/1.0.0/api/token', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export async function getNintendoAccountUser<S extends NintendoAccountScope>(tok
     debug('Getting Nintendo Account user info');
 
     const [signal, cancel] = timeoutSignal();
-    const response = await fetch('https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb-api.accounts.nintendo.com/2.0.0/users/me', {
+    const response = await fetch('https://e97b8a9d672e4ce4845ec6947cd66ef6-sb-api.accounts.nintendo.com/2.0.0/users/me', {
         headers: {
             'Accept-Language': 'en-GB',
             'User-Agent': 'NASDKAPI; Android',
@@ -238,7 +238,7 @@ export interface NintendoAccountSessionToken {
 export interface NintendoAccountSessionTokenJwtPayload extends JwtPayload {
     jti: number;
     typ: 'session_token';
-    iss: 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
+    iss: 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
     /** Unknown - scopes the token is valid for? */
     'st:scp': NintendoAccountJwtScope[];
     /** Subject (Nintendo Account ID) */
@@ -263,14 +263,14 @@ export interface NintendoAccountIdTokenJwtPayload extends JwtPayload {
     exp: number;
     /** Audience (client ID) */
     aud: string;
-    iss: 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
+    iss: 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
     jti: string;
     at_hash: string;
     typ: 'id_token';
     country: string;
 }
 export interface NintendoAccountAccessTokenJwtPayload extends JwtPayload {
-    iss: 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
+    iss: 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com';
     jti: string;
     typ: 'token';
     /** Subject (Nintendo Account ID) */
@@ -364,9 +364,9 @@ export interface NintendoAccountUser<S extends NintendoAccountScope = never> {
     phoneNumberEnabled: boolean;
     /** requires scope user.links[].id/user.links.*.id */
     links:
-        NintendoAccountScope.USER_LINKS extends S ?
-            Partial<Record<NintendoAccountLinkType, NintendoAccountLink | null>> | null :
-        Partial<Record<NintendoAccountLinkTypes<S>, NintendoAccountLink | null>> | null | undefined;
+    NintendoAccountScope.USER_LINKS extends S ?
+    Partial<Record<NintendoAccountLinkType, NintendoAccountLink | null>> | null :
+    Partial<Record<NintendoAccountLinkTypes<S>, NintendoAccountLink | null>> | null | undefined;
     country: string;
     region: null;
     language: string;
@@ -489,4 +489,4 @@ export class NintendoAccountAuthErrorResponse extends ErrorResponse<NintendoAcco
     }
 }
 
-export class NintendoAccountErrorResponse extends ErrorResponse<NintendoAccountError> {}
+export class NintendoAccountErrorResponse extends ErrorResponse<NintendoAccountError> { }

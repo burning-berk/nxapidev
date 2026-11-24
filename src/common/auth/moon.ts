@@ -26,7 +26,7 @@ export async function getPctlToken(storage: persist.LocalStorage, token: string,
 
     const [jwt, sig] = Jwt.decode<NintendoAccountSessionTokenJwtPayload>(token);
 
-    if (jwt.payload.iss !== 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
+    if (jwt.payload.iss !== 'https://e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
         throw new InvalidNintendoAccountTokenError('Invalid Nintendo Account session token issuer');
     }
     if (jwt.payload.typ !== 'session_token') {
