@@ -20,7 +20,7 @@ const ZNCA_USER_AGENT = `com.nintendo.znca/${ZNCA_VERSION}(${ZNCA_PLATFORM}/${ZN
 
 export const ZNCA_API_COMPATIBILITY_VERSION = 'd8fAZDPzwimzQ7c6';
 
-const ZNC_URL = 'https://api-lp1.znc.srv.nintendo.net';
+const ZNC_URL = 'https://api-dd1.znc.srv.nintendo.net';
 export const ZNCA_CLIENT_ID = '71b963c1b7b6d119';
 
 const FRIEND_CODE = /^\d{4}-\d{4}-\d{4}$/;
