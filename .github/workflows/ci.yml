@@ -1,0 +1,335 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  # Pass repository variables/secrets into the environment
+  NXAPI_AUTH_CLI_CLIENT_ID: ${{ vars.NXAPI_AUTH_CLI_CLIENT_ID }}
+  NXAPI_AUTH_APP_CLIENT_ID: ${{ vars.NXAPI_AUTH_APP_CLIENT_ID }}
+  
+  # Map GitHub context to the GitLab variables your build scripts expect
+  CI_COMMIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+  CI_COMMIT_BRANCH: ${{ github.ref_type == 'branch' && github.ref_name || '' }}
+  CI_COMMIT_REF_SLUG: ${{ github.ref_name }}
+  CI_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+  
+  # Optional package naming overrides used by resources/build/ci-package-json.js
+  GITHUB_NPM_REPOSITORY: ${{ vars.GITHUB_NPM_REPOSITORY || github.repository }}
+  GITHUB_NPM_PACKAGE_NAME: ${{ vars.GITHUB_NPM_PACKAGE_NAME }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed if ci-main-version.js checks git history
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm --color="always" install --force
+
+      - name: Compile and Bundle
+        run: |
+          npx tsc
+          NODE_ENV=production npx rollup --config
+          node bin/nxapi.js util validate-discord-titles
+
+      - name: Prepare package and tarball
+        run: |
+          export VERSION=$([ "$CI_COMMIT_BRANCH" != "main" ] || node resources/build/ci-main-version.js)
+          node resources/build/ci-package-json.js
+          PACKAGE=$(npm --color="always" pack)
+          mv "$PACKAGE" nxapi.tgz
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist
+            nxapi.tgz
+
+  build-docker:
+    runs-on: ubuntu-latest
+    if: vars.BUILD_DOCKER_IMAGE == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (Optional)
+        if: vars.DH_REGISTRY_IMAGE != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DH_REGISTRY_USER }}
+          password: ${{ secrets.DH_REGISTRY_PASSWORD }}
+
+      - name: Prepare Docker package.json
+        run: |
+          # Sanitize branch/tag slug (replace / with -)
+          SLUG=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
+          echo "CLEAN_SLUG=$SLUG" >> $GITHUB_ENV
+          node resources/build/ci-package-json.js docker "ghcr.io/${{ github.repository }}:ref-$SLUG"
+
+      - name: Build and Push Docker Image
+        run: |
+          GH_IMAGE="ghcr.io/${{ github.repository }}"
+          DH_IMAGE="${{ vars.DH_REGISTRY_IMAGE }}"
+          
+          docker build --pull --no-cache --tag "$GH_IMAGE:ref-$CLEAN_SLUG" .
+
+          if [ -z "$CI_COMMIT_TAG" ]; then
+            docker push "$GH_IMAGE:ref-$CLEAN_SLUG"
+            if [ -n "$DH_IMAGE" ]; then
+              docker tag "$GH_IMAGE:ref-$CLEAN_SLUG" "$DH_IMAGE:ref-$CLEAN_SLUG"
+              docker push "$DH_IMAGE:ref-$CLEAN_SLUG"
+            fi
+          else
+            docker tag "$GH_IMAGE:ref-$CLEAN_SLUG" "$GH_IMAGE:$CI_COMMIT_TAG"
+            docker push "$GH_IMAGE:$CI_COMMIT_TAG"
+            docker tag "$GH_IMAGE:ref-$CLEAN_SLUG" "$GH_IMAGE:latest"
+            docker push "$GH_IMAGE:latest"
+
+            if [ -n "$DH_IMAGE" ]; then
+              docker tag "$GH_IMAGE:ref-$CLEAN_SLUG" "$DH_IMAGE:$CI_COMMIT_TAG"
+              docker push "$DH_IMAGE:$CI_COMMIT_TAG"
+              docker tag "$GH_IMAGE:ref-$CLEAN_SLUG" "$DH_IMAGE:latest"
+              docker push "$DH_IMAGE:latest"
+            fi
+          fi
+
+  build-app:
+    runs-on: ubuntu-latest
+    needs: build
+    if: vars.BUILD_APP == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm --color="always" install --force
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Build macOS and Linux Electron apps
+        run: |
+          node resources/build/ci-package-json.js
+          npx electron-builder build --macos zip:x64 zip:arm64 --linux deb snap appimage deb:arm64 appimage:arm64 --publish never
+          mv dist/app/package app
+
+      - name: Upload Unix app artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: unix-app-artifacts
+          path: |
+            app/*
+            !app/mac/**
+            !app/mac-arm64/**
+            !app/linux-unpacked/**
+
+  build-windows:
+    runs-on: ubuntu-latest
+    needs: build
+    if: vars.BUILD_WINDOWS_APP == 'true'
+    container:
+      image: electronuserland/builder:wine
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm --color="always" install --force
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Build Windows Electron app
+        run: |
+          node resources/build/ci-package-json.js
+          npx electron-builder build --win nsis --publish never
+          mv dist/app/package app
+
+      - name: Upload Windows app artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app-artifacts
+          path: |
+            app/*
+            !app/win-unpacked/**
+
+  publish-npm:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && secrets.NPM_TOKEN != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies & Download artifacts
+        run: npm --color="always" install --force
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Publish to npmjs.org
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          node resources/build/ci-package-json.js
+          npm --color="always" publish
+
+  publish-github-packages:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && vars.GITHUB_NPM_PACKAGE_NAME != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install dependencies & Download artifacts
+        run: npm --color="always" install --force
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Publish to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node resources/build/ci-package-json.js github
+          npm --color="always" publish
+
+  publish-github-releases:
+    runs-on: ubuntu-latest
+    needs: [build-app, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v') && vars.GITHUB_UPLOAD_RELEASE_ASSETS == 'true'
+    steps:
+      - name: Download Unix apps
+        uses: actions/download-artifact@v4
+        with:
+          name: unix-app-artifacts
+          path: app
+
+      - name: Download Windows apps
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-app-artifacts
+          path: app
+
+      - name: Create Release and Upload Assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$CI_COMMIT_TAG" --json id,url || \
+            gh release create "$CI_COMMIT_TAG" --verify-tag --draft --generate-notes
+
+          shopt -s nullglob
+          gh release upload "$CI_COMMIT_TAG" \
+            app/Nintendo\ Switch\ Online-*-mac.zip \
+            app/Nintendo\ Switch\ Online-*.AppImage \
+            app/nxapi-app_*.deb \
+            app/nxapi-app_*.snap \
+            app/Nintendo\ Switch\ Online\ Setup\ *.exe \
+            --clobber
+
+  publish-next:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies & Download artifacts
+        run: npm --color="always" install --force
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Publish next prereleases
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export VERSION=$(node resources/build/ci-main-version.js)
+          node resources/build/ci-package-json.js
+
+          if [ -n "$VERSION" ]; then
+            if [ "${{ vars.NPM_PUBLISH_NEXT }}" = "true" ] && [ -n "$NPM_TOKEN" ]; then
+              echo "Publishing $VERSION to npm"
+              echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+              npm --color="always" publish --tag next
+            fi
+
+            if [ "${{ vars.GITHUB_NPM_PUBLISH_NEXT }}" = "true" ] && [ -n "$GITHUB_NPM_PACKAGE_NAME" ]; then
+              echo "Publishing $VERSION to GitHub Packages"
+              node resources/build/ci-package-json.js github
+              echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > .npmrc
+              npm --color="always" --registry=https://npm.pkg.github.com/ publish --tag next
+            fi
+          fi
