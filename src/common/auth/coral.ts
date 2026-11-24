@@ -51,7 +51,7 @@ export async function getToken(
     // TODO: getNaToken already does this, but is called after checkUseLimit
     // It has it's own rate limit so just call this first
 
-    if (jwt.payload.iss !== 'https://accounts.nintendo.com') {
+    if (jwt.payload.iss !== 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
         throw new InvalidNintendoAccountTokenError('Invalid Nintendo Account session token issuer');
     }
     if (jwt.payload.typ !== 'session_token') {
@@ -74,7 +74,7 @@ export async function getToken(
         console.warn('Authenticating to Nintendo Switch Online app');
 
         try {
-            const {nso, data} = proxy_url ?
+            const { nso, data } = proxy_url ?
                 await ZncProxyApi.createWithSessionToken(proxy_url, token) :
                 await createWithSessionToken(storage, token, ratelimit);
 
@@ -84,7 +84,7 @@ export async function getToken(
             };
 
             if (nso instanceof CoralApi) {
-                nso.onTokenExpired = createTokenExpiredHandler(storage, token, nso, {existingToken});
+                nso.onTokenExpired = createTokenExpiredHandler(storage, token, nso, { existingToken });
             }
 
             await storage.setItem('NsoToken.' + token, existingToken);
@@ -92,7 +92,7 @@ export async function getToken(
 
             existingToken[Login] = true;
 
-            return {nso, data: existingToken};
+            return { nso, data: existingToken };
         } catch (err) {
             await attempt.recordError(err);
 
@@ -108,10 +108,10 @@ export async function getToken(
         CoralApi.createWithSavedToken(existingToken);
 
     if (nso instanceof CoralApi) {
-        nso.onTokenExpired = createTokenExpiredHandler(storage, token, nso, {existingToken});
+        nso.onTokenExpired = createTokenExpiredHandler(storage, token, nso, { existingToken });
     }
 
-    return {nso, data: existingToken};
+    return { nso, data: existingToken };
 }
 
 async function createWithSessionToken(
@@ -127,7 +127,7 @@ async function createWithSessionToken(
 
 function createTokenExpiredHandler(
     storage: persist.LocalStorage, token: string, nso: CoralApi,
-    renew_token_data: {existingToken: SavedToken}, ratelimit = true
+    renew_token_data: { existingToken: SavedToken }, ratelimit = true
 ) {
     return (data?: CoralError, response?: Response) => {
         debug('Token expired', renew_token_data.existingToken.user.id, data);
@@ -137,7 +137,7 @@ function createTokenExpiredHandler(
 
 async function renewToken(
     storage: persist.LocalStorage, na_session_token: string, nso: CoralApi,
-    renew_token_data: {existingToken: SavedToken}, ratelimit = true
+    renew_token_data: { existingToken: SavedToken }, ratelimit = true
 ) {
     let attempt;
     if (ratelimit) {

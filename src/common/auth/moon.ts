@@ -26,7 +26,7 @@ export async function getPctlToken(storage: persist.LocalStorage, token: string,
 
     const [jwt, sig] = Jwt.decode<NintendoAccountSessionTokenJwtPayload>(token);
 
-    if (jwt.payload.iss !== 'https://accounts.nintendo.com') {
+    if (jwt.payload.iss !== 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
         throw new InvalidNintendoAccountTokenError('Invalid Nintendo Account session token issuer');
     }
     if (jwt.payload.typ !== 'session_token') {
@@ -51,19 +51,19 @@ export async function getPctlToken(storage: persist.LocalStorage, token: string,
             console.warn('Authenticating to Nintendo Switch Parental Controls app');
             debug('Authenticating to pctl with session token');
 
-            const {moon, data} = await MoonApi.createWithSessionToken(token);
+            const { moon, data } = await MoonApi.createWithSessionToken(token);
 
             const existingToken: SavedMoonToken = {
                 ...data,
                 expires_at: Date.now() + (data.nintendoAccountToken.expires_in * 1000),
             };
 
-            moon.onTokenExpired = createTokenExpiredHandler(storage, token, moon, {existingToken});
+            moon.onTokenExpired = createTokenExpiredHandler(storage, token, moon, { existingToken });
 
             await storage.setItem('MoonToken.' + token, existingToken);
             await storage.setItem('NintendoAccountToken-pctl.' + data.user.id, token);
 
-            return {moon, data: existingToken};
+            return { moon, data: existingToken };
         } catch (err) {
             await attempt.recordError(err);
 
@@ -75,14 +75,14 @@ export async function getPctlToken(storage: persist.LocalStorage, token: string,
     await storage.setItem('NintendoAccountToken-pctl.' + existingToken.user.id, token);
 
     const moon = MoonApi.createWithSavedToken(existingToken);
-    moon.onTokenExpired = createTokenExpiredHandler(storage, token, moon, {existingToken});
+    moon.onTokenExpired = createTokenExpiredHandler(storage, token, moon, { existingToken });
 
-    return {moon, data: existingToken};
+    return { moon, data: existingToken };
 }
 
 function createTokenExpiredHandler(
     storage: persist.LocalStorage, token: string, moon: MoonApi,
-    renew_token_data: {existingToken: SavedMoonToken}, ratelimit = true
+    renew_token_data: { existingToken: SavedMoonToken }, ratelimit = true
 ) {
     return (data?: MoonError, response?: Response) => {
         debug('Token expired', renew_token_data.existingToken.user.id, data);
@@ -92,7 +92,7 @@ function createTokenExpiredHandler(
 
 async function renewToken(
     storage: persist.LocalStorage, token: string, moon: MoonApi,
-    renew_token_data: {existingToken: SavedMoonToken}, ratelimit = true
+    renew_token_data: { existingToken: SavedMoonToken }, ratelimit = true
 ) {
     let attempt;
     if (ratelimit) {

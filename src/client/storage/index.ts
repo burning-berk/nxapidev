@@ -15,7 +15,7 @@ type PromiseType<T extends Promise<any>> = T extends Promise<infer R> ? R : neve
 type ConstructorType<T extends new (...args: any) => any> = T extends new (...args: any) => infer R ? R : never;
 
 export class Storage<T extends StorageProvider = StorageProvider> {
-    constructor(readonly provider: T) {}
+    constructor(readonly provider: T) { }
 
     async getSessionToken(na_id: string, client_id: string) {
         return this.provider.getSessionToken(na_id, client_id);
@@ -46,15 +46,15 @@ export class Storage<T extends StorageProvider = StorageProvider> {
         C extends {
             create(args: any): StorageProvider | Promise<StorageProvider>;
         } | {
-            new (args: any): StorageProvider;
+            new(args: any): StorageProvider;
         },
         R extends
-            C extends { create(args: any): Promise<StorageProvider>; } ?
-                Promise<Storage<PromiseType<ReturnType<C['create']> extends Promise<any> ? ReturnType<C['create']> : never>>> :
-            C extends { create(args: any): StorageProvider; } ?
-                Storage<ReturnType<C['create']> extends StorageProvider ? ReturnType<C['create']> : never> :
-            C extends new (args: any) => StorageProvider ? Storage<ConstructorType<C>> :
-            never,
+        C extends { create(args: any): Promise<StorageProvider>; } ?
+        Promise<Storage<PromiseType<ReturnType<C['create']> extends Promise<any> ? ReturnType<C['create']> : never>>> :
+        C extends { create(args: any): StorageProvider; } ?
+        Storage<ReturnType<C['create']> extends StorageProvider ? ReturnType<C['create']> : never> :
+        C extends new (args: any) => StorageProvider ? Storage<ConstructorType<C>> :
+        never,
     >(
         constructor: C,
         ...args:
@@ -91,7 +91,7 @@ export class NintendoAccountSession<
     ) {
         const [jwt, jwt_sig] = Jwt.decode<NintendoAccountSessionTokenJwtPayload>(token);
 
-        if (jwt.payload.iss !== 'https://accounts.nintendo.com') {
+        if (jwt.payload.iss !== 'https://msyb3tki:q5jSs8Lv@e97b8a9d672e4ce4845ec6947cd66ef6-sb.accounts.nintendo.com') {
             throw new Error('Invalid Nintendo Account session token issuer');
         }
         if (jwt.payload.typ !== 'session_token') {
